@@ -1,0 +1,331 @@
+﻿<Window x:Class="ChemicalInventoryApp.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewmodels="clr-namespace:ChemicalInventoryApp.ViewModels"
+        xmlns:models="clr-namespace:ChemicalInventoryApp.Models"
+        xmlns:helpers="clr-namespace:ChemicalInventoryApp.Helpers"
+        Title="Chemical Inventory Manager" Height="650" Width="800">
+
+    <Window.DataContext>
+        <viewmodels:MainViewModel/>
+    </Window.DataContext>
+
+    <TabControl Margin="5">
+        <!-- CHEMICALS TAB -->
+        <TabItem Header="Chemical Mixtures">
+            <Grid Margin="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="350" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0" Margin="0,0,15,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0"
+                                Orientation="Horizontal"
+                                Margin="0,0,0,10">
+                        <Button Content="+ Add Folder"
+                                Command="{Binding AddFolderCommand}"
+                                Width="90"
+                                Padding="5"
+                                Margin="0,0,10,0" />
+                        <Button Content="+ Add Mixture"
+                                Command="{Binding AddChemicalCommand}"
+                                Width="90"
+                                Padding="5" />
+                        <Button Content="Save Tree Order"
+                                Command="{Binding SaveTreeCommand}"
+                                Width="110"
+                                Padding="5"
+                                Margin="10,0,0,0" />
+                    </StackPanel>
+
+                    <TreeView x:Name="ChemicalTree"
+                              Grid.Row="1"
+                              ItemsSource="{Binding TreeRoot}"
+                              AllowDrop="True"
+                              PreviewMouseLeftButtonDown="Tree_PreviewMouseLeftButtonDown"
+                              MouseMove="Tree_MouseMove"
+                              Drop="Tree_Drop"
+                              MouseDoubleClick="ChemicalTree_MouseDoubleClick"
+                              >
+                        <!--SelectedItemChanged="ChemicalTree_SelectedItemChanged">-->
+                        <TreeView.Resources>
+                            <!-- Template for Folders -->
+                            <HierarchicalDataTemplate DataType="{x:Type models:ChemicalNode}"
+                                                      ItemsSource="{Binding Items}">
+                                <StackPanel Orientation="Horizontal"
+                                            Margin="2">
+                                    <TextBlock Text="📁 " />
+                                    <TextBlock Text="{Binding Name}"
+                                               FontWeight="Bold" />
+                                </StackPanel>
+                            </HierarchicalDataTemplate>
+
+                            <!-- Template for Chemicals -->
+                            <DataTemplate DataType="{x:Type models:Chemical}">
+                                <StackPanel Orientation="Horizontal"
+                                            Margin="2">
+                                    <TextBlock Text="🧪 " />
+                                    <TextBlock Text="{Binding Name}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </TreeView.Resources>
+                    </TreeView>
+                    <!--
+                    <Button Grid.Row="0" Content="+ Add Mixture" Command="{Binding AddChemicalCommand}" HorizontalAlignment="Left" Width="120" Padding="5" Margin="0,0,0,10"/>
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding Chemicals}" SelectedItem="{Binding SelectedChemical}" AutoGenerateColumns="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Ref No" Binding="{Binding RefNo}" Width="60"/>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    -->
+                </Grid>
+
+                <GroupBox Grid.Column="1" Header="Edit Mixture">
+                    <GroupBox.Style>
+                        <Style TargetType="GroupBox">
+                            <Setter Property="Visibility"
+                                    Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedChemical}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </GroupBox.Style>
+                    
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="10">
+                            <TextBlock Text="Name" FontWeight="Bold"/>
+                            <TextBox Text="{Binding SelectedChemical.Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+                            
+                            <TextBlock Text="Ref No" FontWeight="Bold"/>
+                            <TextBox Text="{Binding SelectedChemical.RefNo, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+
+                            <TextBlock Text="Vendor &amp; Vendor ID" FontWeight="Bold"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <TextBox Text="{Binding SelectedChemical.Vendor, UpdateSourceTrigger=PropertyChanged}" Width="150" Margin="0,0,10,0"/>
+                                <TextBox Text="{Binding SelectedChemical.VendorId, UpdateSourceTrigger=PropertyChanged}" Width="150"/>
+                            </StackPanel>
+
+                            <TextBlock Text="Tag" FontWeight="Bold"/>
+                            <ComboBox ItemsSource="{Binding Source={helpers:EnumBindingSource {x:Type models:ChemicalTag}}}" SelectedItem="{Binding SelectedChemical.Tag}" Margin="0,0,0,15"/>
+
+                            <Separator Margin="0,0,0,15"/>
+                            
+                            <TextBlock Text="Recipe Ingredients" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <!-- Editable DataGrid for existing Types -->
+                            <DataGrid ItemsSource="{Binding SelectedChemical.Ingredients}"
+                                      SelectedItem="{Binding SelectedAssignedIngredient}"
+                                      AutoGenerateColumns="False"
+                                      Height="100"
+                                      Margin="0,0,0,5"
+                                      CanUserAddRows="False"
+                                      AllowDrop="True"
+                                      Drop="Ingredients_Drop">
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="Component"
+                                                            Width="130">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding DisplayName, Mode=OneWay}"
+                                                           Margin="4,0,0,0"
+                                                           VerticalAlignment="Center" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Amount"
+                                                        Binding="{Binding Amount, UpdateSourceTrigger=PropertyChanged}"
+                                                        Width="*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <!--
+                            <ListBox ItemsSource="{Binding SelectedChemical.Ingredients}" SelectedItem="{Binding SelectedAssignedIngredient}" Height="100" Margin="0,0,0,5">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock>
+                                            <Run Text="{Binding DisplayName, Mode=OneWay}"/>
+                                            <Run Text=" - Amount: "/>
+                                            <Run Text="{Binding Amount}"/>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            -->
+                            <Button Content="Remove Ingredient" Command="{Binding RemoveIngredientCommand}" Margin="0,0,0,10"/>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                                <ComboBox ItemsSource="{Binding AllAvailableIngredients}" SelectedItem="{Binding SelectedAvailableIngredient}" DisplayMemberPath="Name" Width="150" Margin="0,0,10,0"/>
+                                <TextBox Text="{Binding InputIngredientAmount, UpdateSourceTrigger=PropertyChanged}" Width="50" Margin="0,0,10,0"/>
+                                <Button Content="Add" Command="{Binding AssignIngredientCommand}" Width="75"/>
+                            </StackPanel>
+
+                            <Button Content="Save Changes" Command="{Binding SaveCommand}" CommandParameter="{Binding SelectedChemical}" Margin="0,0,0,10" Background="#e1e1e1"/>
+                            <Button Content="Delete Mixture" Command="{Binding DeleteChemicalCommand}" Foreground="#c62828"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </GroupBox>
+                <GroupBox Grid.Column="1" Header="Edit Folder">
+                    <GroupBox.Style>
+                        <Style TargetType="GroupBox">
+                            <Setter Property="Visibility"
+                                    Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedFolder}"
+                                             Value="{x:Null}">
+                                    <Setter Property="Visibility"
+                                            Value="Collapsed" />
+                                </DataTrigger>
+                                <!-- Show this box only when a folder is selected -->
+                                <DataTrigger Binding="{Binding SelectedChemical}"
+                                             Value="{x:Null}">
+                                    <Setter Property="Visibility"
+                                            Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </GroupBox.Style>
+
+                    <StackPanel Margin="10">
+                        <TextBlock Text="Folder Name"
+                                   FontWeight="Bold" />
+                        <TextBox Text="{Binding SelectedFolder.Name, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,15" />
+
+                        <Button Content="Save Folder Name"
+                                Command="{Binding SaveCommand}"
+                                CommandParameter="{Binding SelectedFolder}"
+                                Margin="0,0,0,10"
+                                Background="#e1e1e1" />
+
+                        <TextBlock Text="Warning: Deleting a folder deletes ALL contents inside it."
+                                   Foreground="Red"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,5" />
+                        <Button Content="Delete Folder"
+                                Command="{Binding DeleteFolderCommand}"
+                                Foreground="#c62828" />
+                    </StackPanel>
+                </GroupBox>
+            </Grid>
+        </TabItem>
+
+        <!-- PURE CHEMICALS TAB -->
+        <TabItem Header="Pure Elements">
+            <Grid Margin="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="350" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0" Margin="0,0,15,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Button Grid.Row="0" Content="+ Add Pure Element" Command="{Binding AddPureCommand}" HorizontalAlignment="Left" Width="130" Padding="5" Margin="0,0,0,10"/>
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding PureChemicals}" SelectedItem="{Binding SelectedPureChemical}" AutoGenerateColumns="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+
+                <GroupBox Grid.Column="1" Header="Edit Pure Element">
+                    <GroupBox.Style>
+                        <Style TargetType="GroupBox">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedPureChemical}" Value="{x:Null}">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </GroupBox.Style>
+
+                    <StackPanel Margin="10"
+                                DataContext="{Binding SelectedPureChemical}">
+                        <TextBlock Text="Name"
+                                   FontWeight="Bold" />
+                        <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,10" />
+
+                        <TextBlock Text="Molecular Weight (Mw)"
+                                   FontWeight="Bold" />
+                        <TextBox Text="{Binding Mw, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,0,15" />
+
+                        <Separator Margin="0,0,0,15" />
+
+                        <TextBlock Text="Categories / Types"
+                                   FontWeight="Bold"
+                                   Margin="0,0,0,5" />
+
+                        <!-- Editable DataGrid for existing Types -->
+                        <DataGrid ItemsSource="{Binding Types}"
+                                  SelectedItem="{Binding DataContext.SelectedTypeItem, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  AutoGenerateColumns="False"
+                                  Height="100"
+                                  Margin="0,0,0,5"
+                                  CanUserAddRows="False">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="Category"
+                                                        Width="130">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Category}"
+                                                       Margin="4,0,0,0"
+                                                       VerticalAlignment="Center" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <ComboBox ItemsSource="{Binding Source={helpers:EnumBindingSource {x:Type models:CategoryType}}}"
+                                                      SelectedItem="{Binding Category, UpdateSourceTrigger=PropertyChanged}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Value (Integer)"
+                                                    Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                    Width="*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <Button Content="Remove Selected Type"
+                                Command="{Binding DataContext.RemoveTypeCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                Margin="0,0,0,10" />
+
+                        <!-- UI to add new Types -->
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="0,0,0,20">
+                            <ComboBox ItemsSource="{Binding Source={helpers:EnumBindingSource {x:Type models:CategoryType}}}"
+                                      SelectedItem="{Binding DataContext.SelectedCategoryType, RelativeSource={RelativeSource AncestorType=Window}}"
+                                      Width="130"
+                                      Margin="0,0,10,0" />
+                            <TextBox Text="{Binding DataContext.InputCategoryValue, RelativeSource={RelativeSource AncestorType=Window}, UpdateSourceTrigger=PropertyChanged}"
+                                     Width="60"
+                                     Margin="0,0,10,0" />
+                            <Button Content="Add Type"
+                                    Command="{Binding DataContext.AddTypeCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    Width="75" />
+                        </StackPanel>
+
+                        <Button Content="Save Element"
+                                Command="{Binding DataContext.SaveCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding}"
+                                Margin="0,0,0,10"
+                                Background="#e1e1e1" />
+                        <Button Content="Delete Element"
+                                Command="{Binding DataContext.DeletePureCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                Foreground="#c62828" />
+                    </StackPanel>
+                </GroupBox>
+            </Grid>
+        </TabItem>
+    </TabControl>
+</Window>

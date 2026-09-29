@@ -1,8 +1,8 @@
 using System;
 using System.Collections.ObjectModel;
-using ChemicalInventoryApp.Helpers;
+using LumChems.Helpers;
 
-namespace ChemicalInventoryApp.Models
+namespace LumChems.Models
 {
     public enum ChemicalTag { Unspecified, Reagent, Solvent, Catalyst, Toxic }
     public enum PropertyType { Density, PhLevel, Viscosity, BoilingPoint }

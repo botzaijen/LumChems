@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Markup;
 
-namespace ChemicalInventoryApp.Helpers
+namespace LumChems.Helpers
 {
     public class EnumBindingSourceExtension : MarkupExtension
     {

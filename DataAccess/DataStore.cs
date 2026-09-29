@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using ChemicalInventoryApp.Helpers;
-using ChemicalInventoryApp.Models;
+using LumChems.Helpers;
+using LumChems.Models;
 using Microsoft.Data.Sqlite;
 
-namespace ChemicalInventoryApp.DataAccess
+namespace LumChems.DataAccess
 {
     public class DataStore
     {
@@ -34,10 +34,12 @@ namespace ChemicalInventoryApp.DataAccess
             return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
         }
 
-        private const string ConnectionString = "Data Source=data.db";
+        private readonly string ConnectionString;
+        public DataStore() : this("Data Source=data.db") { }
 
-        public DataStore()
+        public DataStore(string connectionString)
         {
+            ConnectionString = connectionString;
             using var connection = new SqliteConnection(ConnectionString);
             connection.Open();
             var command = connection.CreateCommand();
@@ -199,7 +201,7 @@ namespace ChemicalInventoryApp.DataAccess
             return (rootItems, chemicals, pureChemicals);
         }
 
-        internal void ExecuteNonQuery(string query, params SqliteParameter[] parameters)
+        public void ExecuteNonQuery(string query, params SqliteParameter[] parameters)
         {
             using var connection = new SqliteConnection(ConnectionString);
             connection.Open();

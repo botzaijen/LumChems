@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace ChemicalInventoryApp.Helpers
+namespace LumChems.Helpers
 {
     public class ViewModelBase : INotifyPropertyChanged
     {

@@ -3,12 +3,12 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using ChemicalInventoryApp.DataAccess;
-using ChemicalInventoryApp.Helpers;
-using ChemicalInventoryApp.Models;
+using LumChems.DataAccess;
+using LumChems.Helpers;
+using LumChems.Models;
 using Microsoft.Data.Sqlite;
 
-namespace ChemicalInventoryApp.ViewModels
+namespace LumChems.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {

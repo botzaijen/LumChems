@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Input;
 
-namespace ChemicalInventoryApp.Helpers
+namespace LumChems.Helpers
 {
     public class RelayCommand : ICommand
     {

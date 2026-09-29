@@ -2,9 +2,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using ChemicalInventoryApp.Helpers;
-using ChemicalInventoryApp.Models;
-using ChemicalInventoryApp.ViewModels;
+using LumChems.ViewModels;
+using LumChems.Helpers;
+using LumChems.Models;
 
 namespace ChemicalInventoryApp.Views
 {

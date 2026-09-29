@@ -7,6 +7,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="LumChems.Tests\**" />
+    <EmbeddedResource Remove="LumChems.Tests\**" />
+    <None Remove="LumChems.Tests\**" />
+    <Page Remove="LumChems.Tests\**" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0" />
   </ItemGroup>
 </Project>

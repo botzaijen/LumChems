@@ -22,36 +22,32 @@ namespace ChemicalInventoryApp.Views
             var vm = DataContext as MainViewModel;
             if (vm == null || vm.SelectedChemical == null) return;
 
-            // Extract the dragged item (fallback to PureChemical in case you drag from the other tab later)
             var droppedData = e.Data.GetData(typeof(Chemical)) as PureChemical
                            ?? e.Data.GetData(typeof(PureChemical)) as PureChemical;
 
             if (droppedData != null)
             {
-                // 1. Guard against a mixture containing itself
                 if (droppedData == vm.SelectedChemical)
                 {
                     MessageBox.Show("A mixture cannot contain itself as an ingredient.", "Invalid Operation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                // 2. Guard against duplicate ingredients
                 if (vm.SelectedChemical.Ingredients.Any(i => i.ChemicalRef == droppedData))
                 {
-                    // Optional: you could increment the amount here instead of rejecting it
                     MessageBox.Show("This ingredient is already in the mixture.", "Duplicate Ingredient", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
-                // 3. Add to the collection
                 vm.SelectedChemical.Ingredients.Add(new IngredientItem
                 {
                     ChemicalRef = droppedData,
-                    Amount = vm.InputIngredientAmount // Uses whatever is currently in the Amount text box
+                    Amount = vm.InputIngredientAmount
                 });
 
-                // Let the drag-and-drop system know we handled this as a Copy, not a Move, 
-                // so it doesn't get deleted from the TreeRoot.
+                // ADD THIS LINE: Manually mark as dirty when ingredient is dropped
+                vm.SelectedChemical.IsDirty = true;
+
                 e.Effects = DragDropEffects.Copy;
                 e.Handled = true;
             }
@@ -74,20 +70,27 @@ namespace ChemicalInventoryApp.Views
         }*/
         private void ChemicalTree_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            // Find the specific item that was double-clicked
             var treeViewItem = FindAncestor<TreeViewItem>((DependencyObject)e.OriginalSource);
+            if (treeViewItem == null || !(DataContext is MainViewModel vm)) return;
 
-            // If the user double-clicked empty space, do nothing
-            if (treeViewItem == null) return;
+            var newItem = treeViewItem.DataContext as ViewModelBase;
+            if (newItem == null) return;
 
-            if (DataContext is MainViewModel vm)
+            // Do nothing if double clicking the item that is already open
+            if (newItem == vm.SelectedChemical || newItem == vm.SelectedFolder) return;
+
+            // Check if the currently open tree item has unsaved changes
+            ViewModelBase? currentTreeItem = (ViewModelBase?)vm.SelectedChemical ?? (ViewModelBase?)vm.SelectedFolder;
+
+            if (vm.CheckDirtyAndPrompt(currentTreeItem))
             {
-                if (treeViewItem.DataContext is Chemical chem)
+                // Change selection if user handled or had no unsaved changes
+                if (newItem is Chemical chem)
                 {
                     vm.SelectedChemical = chem;
                     vm.SelectedFolder = null;
                 }
-                else if (treeViewItem.DataContext is ChemicalNode node)
+                else if (newItem is ChemicalNode node)
                 {
                     vm.SelectedFolder = node;
                     vm.SelectedChemical = null;

@@ -36,11 +36,6 @@
                                 Command="{Binding AddChemicalCommand}"
                                 Width="90"
                                 Padding="5" />
-                        <Button Content="Save Tree Order"
-                                Command="{Binding SaveTreeCommand}"
-                                Width="110"
-                                Padding="5"
-                                Margin="10,0,0,0" />
                     </StackPanel>
 
                     <TreeView x:Name="ChemicalTree"

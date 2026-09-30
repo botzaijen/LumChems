@@ -164,12 +164,17 @@ namespace LumChems.ViewModels
                 OnPropertyChanged(nameof(AllAvailableIngredients));
             });
 
+            SaveTreeCommand = new RelayCommand(_ => {
+                _dataStore.SyncTreeOrder(TreeRoot);
+            });
+            
             AddChemicalCommand = new RelayCommand(_ => {
                 var c = new Chemical { Name = "New Mixture" };
                 TreeRoot.Add(c);
                 Chemicals.Add(c);
                 SelectedChemical = c;
                 OnPropertyChanged(nameof(AllAvailableIngredients));
+                SaveTreeCommand.Execute(null);
             });
 
             DeleteChemicalCommand = new RelayCommand(_ => {
@@ -181,6 +186,7 @@ namespace LumChems.ViewModels
                 Chemicals.Remove(SelectedChemical);
                 SelectedChemical = null;
                 OnPropertyChanged(nameof(AllAvailableIngredients));
+                SaveTreeCommand.Execute(null);
             }, _ => SelectedChemical != null);
 
             AddPureCommand = new RelayCommand(_ => {
@@ -235,7 +241,8 @@ namespace LumChems.ViewModels
                     SelectedPureChemical.Types.Remove(SelectedTypeItem);
                 }
             }, _ => SelectedPureChemical != null && SelectedTypeItem != null);
-
+            
+            
             AddFolderCommand = new RelayCommand(_ => {
                 var folder = new ChemicalNode { Name = "New Folder" };
                 if (_dataStore is not null)
@@ -243,11 +250,11 @@ namespace LumChems.ViewModels
                     _dataStore.ExecuteNonQuery("INSERT INTO ChemicalNodes (Id, Name) VALUES ($id, $name)", new SqliteParameter("$id", folder.Id), new SqliteParameter("$name", folder.Name));
                 }
                 TreeRoot.Add(folder);
+
+                SaveTreeCommand.Execute(null);
             });
 
-            SaveTreeCommand = new RelayCommand(_ => {
-                _dataStore.SyncTreeOrder(TreeRoot);
-            });
+            
             DeleteFolderCommand = new RelayCommand(_ => {
                 if (SelectedFolder == null) return;
 
@@ -258,6 +265,7 @@ namespace LumChems.ViewModels
                 RemoveItemFromTree(TreeRoot, SelectedFolder);
 
                 SelectedFolder = null;
+                SaveTreeCommand.Execute(null);
             }, _ => SelectedFolder != null);
         }
     }
